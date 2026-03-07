@@ -7,7 +7,7 @@
 
 A lightweight, minimal, yet powerful multi-modal sensor logging application designed specifically for the **iPhone 16 Pro**.
 
-This project goes beyond merely collecting data; its primary goal is to serve as an **Offline-First Testbed for Orchestration AI engines**. By capturing raw, irregular time-series data streams shaped by hardware thermal throttling and OS scheduling, it provides the perfect "noisy" dataset required to train robust continuous-time models like **NCP (Neural Circuit Policies)** and **LTC (Liquid Time-Constant)** networks.
+This project goes beyond merely collecting data; its primary goal is to serve as an **Offline-First Testbed for Orchestration AI engines**. By capturing raw, irregular time-series data streams shaped by hardware thermal throttling and OS scheduling, it provides the perfect "noisy" dataset required to train robust continuous-time models
 
 ---
 
