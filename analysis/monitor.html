@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Monitor for Sensor Data comparing Delay and Frequency" />
+  <title>Sensor Data Monitor | Advanced Dynamics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <!-- Load the locally generated data script -->
+  <script src="data.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #0B0F19;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      
+      --accent-all-data: #10B981; 
+      --accent-varying: #8B5CF6;  
+      --blue-accent: #3B82F6;
+      
+      --extero-color: #38BDF8;
+      --proprio-color: #F43F5E;
+      --intero-color: #FBBF24;
+      
+      --sidebar-width: 320px;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      display: flex;
+      height: 100vh;
+    }
+    
+    .background-glow {
+      position: fixed;
+      top: -20vh;
+      left: 10vw;
+      width: 60vw;
+      height: 60vh;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      background: rgba(11, 15, 25, 0.95);
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      z-index: 20;
+      overflow-y: auto;
+      backdrop-filter: blur(10px);
+    }
+    
+    .sidebar-header {
+      padding: 2rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .sidebar-header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #E2E8F0 0%, #94A3B8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sidebar-header p {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .category-group {
+      margin-top: 1.5rem;
+      padding: 0 1rem;
+    }
+    
+    .category-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .category-title.extero { color: var(--extero-color); }
+    .category-title.proprio { color: var(--proprio-color); }
+    .category-title.intero { color: var(--intero-color); }
+
+    .sensor-item {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+    }
+    .sensor-item:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-main);
+    }
+    .sensor-item.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: #fff;
+      font-weight: 600;
+      border-left: 3px solid var(--blue-accent);
+    }
+    .sensor-sub { font-size: 0.7rem; opacity: 0.7; margin-top: 0.2rem; }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    
+    .content-header {
+      padding: 2rem;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(11, 15, 25, 0.8);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    
+    .current-sensor-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge.extero { background: rgba(56, 189, 248, 0.1); color: var(--extero-color); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge.proprio { background: rgba(244, 63, 94, 0.1); color: var(--proprio-color); border: 1px solid rgba(244, 63, 94, 0.3); }
+    .badge.intero { background: rgba(251, 191, 36, 0.1); color: var(--intero-color); border: 1px solid rgba(251, 191, 36, 0.3); }
+    .badge.viztype { background: rgba(139, 92, 246, 0.1); color: var(--accent-varying); border: 1px solid rgba(139, 92, 246, 0.3); margin-left:10px; }
+    
+    .nav-tabs { display: flex; gap: 0.5rem; }
+    .nav-tab {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      border: 1px solid var(--card-border);
+    }
+    .nav-tab:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .nav-tab.active { background: var(--card-bg); color: #fff; border-color: var(--blue-accent); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+
+    .content-body {
+      padding: 2rem;
+      max-width: 1500px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .notice-banner {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      display: none;
+      align-items: center;
+      gap: 1rem;
+    }
+    .notice-banner.active { display: flex; }
+    .notice-icon { font-size: 1.5rem; }
+    .notice-text { font-size: 0.9rem; color: #DDD; }
+    .notice-text strong { color: var(--extero-color); }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      margin-bottom: 2rem;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::before {
+      content: ''; display: inline-block; width: 4px; height: 1.1rem;
+      background: var(--blue-accent); border-radius: 2px;
+    }
+    
+    .chart-container { position: relative; height: 500px; width: 100%; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--card-border); }
+    th { color: var(--text-muted); font-weight: 500; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; }
+    td { font-size: 0.9rem; color: #e2e8f0; font-family: 'Menlo', 'Monaco', monospace; }
+    
+    .stat-pill {
+      display: inline-block; padding: 0.4rem 0.8rem; border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.1); color: var(--accent-all-data);
+      font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .stat-pill.varying {
+      background: rgba(139, 92, 246, 0.1); color: var(--accent-varying);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+    
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+    
+    .replay-btn {
+      background: var(--blue-accent); color: white; border: none;
+      border-radius: 4px; padding: 8px 16px; cursor: pointer;
+      font-weight: 600; margin-left: auto; transition: background 0.2s;
+    }
+    .replay-btn:hover { background: #2563eb; }
+    .replay-btn.stop { background: #EF4444; }
+    .replay-btn.stop:hover { background: #DC2626; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+
+  <div class="background-glow"></div>
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>Sensory Schema</h1>
+      <p>PRD v1.0 Classification</p>
+    </div>
+    <div id="sidebar-content"></div>
+  </div>
+
+  <div class="main-content">
+    
+    <div class="content-header">
+      <div>
+        <h2 class="current-sensor-title" id="main-title">
+          Select Sensor
+          <span class="badge" id="main-badge" style="display:none;"></span>
+        </h2>
+        <div style="color:var(--text-muted); font-size:0.9rem; margin-top:0.3rem;" id="main-subtitle"></div>
+      </div>
+      <div class="nav-tabs">
+        <div class="nav-tab active" data-target="structure">Data Structure</div>
+        <div class="nav-tab" data-target="sample">Sample Viz <span id="vizTypeBadge" class="badge viztype">1D</span></div>
+        <div class="nav-tab" data-target="frequency">Frequency</div>
+        <div class="nav-tab" data-target="delay">Delay Jitter</div>
+      </div>
+    </div>
+    
+    <div class="content-body">
+      
+      <div class="notice-banner" id="notice-limitation">
+        <div class="notice-icon">ℹ️</div>
+        <div class="notice-text" id="notice-msg">
+          <strong>Context:</strong> ...
+        </div>
+      </div>
+
+      <!-- VIEW: STRUCTURE -->
+      <div id="view-structure" class="view-section active">
+        <div class="grid-2">
+          <div class="glass-card">
+            <div class="section-title">Global Logging Mode (All Data)</div>
+            <div style="margin-bottom: 1rem;"><span class="stat-pill" id="stat-count-all">0 rows</span></div>
+            <div style="max-height: 500px; overflow-y: auto;">
+              <table><thead><tr><th>Column</th><th>Sample Data</th></tr></thead><tbody id="tbody-all"></tbody></table>
+            </div>
+          </div>
+          
+          <div class="glass-card">
+            <div class="section-title">Varying Frequency Experiment</div>
+            <div style="margin-bottom: 1rem;"><span class="stat-pill varying" id="stat-count-varying">0 rows</span></div>
+            <div style="max-height: 500px; overflow-y: auto;">
+              <table><thead><tr><th>Column</th><th>Sample Data</th></tr></thead><tbody id="tbody-varying"></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: SAMPLE VIZ -->
+      <div id="view-sample" class="view-section">
+        <div class="glass-card">
+          <div class="section-title" style="display: flex;">
+            Dynamic Spatial / Feature Visualization
+            <button class="replay-btn" id="btnReplay" style="display:none;">Play Animation</button>
+          </div>
+          <p id="vizDesc" style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;"></p>
+          <div class="chart-container" id="plotlyChartContainer">
+            <div id="plotlyChart" style="width: 100%; height: 100%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: FREQUENCY -->
+      <div id="view-frequency" class="view-section">
+        <div class="glass-card">
+          <div class="section-title">Frequency Adherence: Actual vs Target</div>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
+            Measures responsiveness to modulation commands.
+          </p>
+          <div class="chart-container" style="height:350px;">
+            <canvas id="frequencyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: DELAY -->
+      <div id="view-delay" class="view-section">
+        <div class="glass-card">
+          <div class="section-title">Latency Drift & Jitter (Hardware vs System Space)</div>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
+            Drift of system arrival relative to the original hardware timestamp generation.
+          </p>
+          <div class="chart-container" style="height:350px;">
+            <canvas id="delayChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    if (typeof ANALYSIS_DATA === 'undefined') {
+      alert("Error: Data file (data.js) not found. Build python script first.");
+    }
+    
+    const SCHEMA_MAP = {
+      "extero": {
+        name: "Exteroception", icon: "🌍",
+        sub: {
+          "vision": { label: "Vision", desc:"Face BS, LiDAR, ISO/Exp/Lens" },
+          "audio":  { label: "Audio", desc:"Mic Peak/Avg dBFS" },
+          "gps":    { label: "Spatial", desc:"Lat/Lon, Heading" },
+          "env":    { label: "Environment", desc:"Lux, Pressure, Prox" }
+        }
+      },
+      "proprio": {
+        name: "Proprioception", icon: "🦾",
+        sub: {
+          "imu":      { label: "IMU", desc:"Accel, Gyro, Activity" },
+          "actuator": { label: "Actuator", desc:"Torch, Zoom, Lock" }
+        }
+      },
+      "intero": {
+        name: "Interoception", icon: "🧠",
+        sub: {
+          "sys": { label: "Health", desc:"CPU, GPU, ANE, Thermal, Mem" }
+        }
+      }
+    };
+    
+    let currentSensor = "";
+    let freqChartInst = null;
+    let delayChartInst = null;
+    let allSensorsAvailable = [];
+    let animationInterval = null;
+    
+    let audioCtx = null;
+    let oscillator = null;
+    let gainNode = null;
+
+    function determineCategory(sensorStr) {
+      const parts = sensorStr.split('_'); 
+      if (parts.length >= 2) return { cat: parts[0], sub: parts[1] }; 
+      return { cat: "other", sub: "unknown" };
+    }
+
+    function buildSidebar() {
+      const sensorsAll = Object.keys(ANALYSIS_DATA["logging_all_data"] || {});
+      const sensorsVarying = Object.keys(ANALYSIS_DATA["testing_varying_frequency"] || {});
+      allSensorsAvailable = [...new Set([...sensorsAll, ...sensorsVarying])].sort();
+      
+      const mapped = { extero: {}, proprio: {}, intero: {}, other: {} };
+      
+      allSensorsAvailable.forEach(s => {
+        const inf = determineCategory(s);
+        if (SCHEMA_MAP[inf.cat]) {
+          if (!mapped[inf.cat][inf.sub]) mapped[inf.cat][inf.sub] = [];
+          mapped[inf.cat][inf.sub].push(s);
+        } else {
+          if (!mapped.other.unknown) mapped.other.unknown = [];
+          mapped.other.unknown.push(s);
+        }
+      });
+      
+      const sb = document.getElementById('sidebar-content');
+      sb.innerHTML = '';
+      
+      ["extero", "proprio", "intero"].forEach(catKey => {
+        if (Object.keys(mapped[catKey]).length === 0) return;
+        
+        const cg = document.createElement('div');
+        cg.className = 'category-group';
+        
+        const ctitle = document.createElement('div');
+        ctitle.className = `category-title ${catKey}`;
+        ctitle.innerHTML = `${SCHEMA_MAP[catKey].icon} ${SCHEMA_MAP[catKey].name}`;
+        cg.appendChild(ctitle);
+        
+        Object.keys(mapped[catKey]).forEach(subKey => {
+           mapped[catKey][subKey].forEach(sensorStr => {
+              const item = document.createElement('div');
+              item.className = 'sensor-item';
+              item.dataset.sensor = sensorStr;
+              
+              const pParts = sensorStr.split(subKey+"_");
+              const shortName = pParts.length > 1 ? pParts[1].replace(/_/g, " ") : sensorStr;
+              const subMeta = SCHEMA_MAP[catKey].sub[subKey];
+              
+              item.innerHTML = `
+                <div style="font-weight:600; text-transform:capitalize;">${subMeta ? subMeta.label + " - " : ""}${shortName}</div>
+                <div class="sensor-sub">${sensorStr}</div>
+              `;
+              
+              item.addEventListener('click', () => {
+                document.querySelectorAll('.sensor-item').forEach(el=>el.classList.remove('active'));
+                item.classList.add('active');
+                currentSensor = sensorStr;
+                updateView();
+              });
+              cg.appendChild(item);
+           });
+        });
+        sb.appendChild(cg);
+      });
+      
+      if (allSensorsAvailable.length > 0) {
+        currentSensor = allSensorsAvailable[0];
+        document.querySelector(`[data-sensor="${currentSensor}"]`).classList.add('active');
+        updateView();
+      }
+    }
+
+    function stopAudio() {
+      if (oscillator) {
+        try { oscillator.stop(); oscillator.disconnect(); } catch(e){}
+        oscillator = null;
+      }
+      let btn = document.getElementById('btnReplay');
+      btn.innerText = "Play/Stop Synthesizer";
+      btn.classList.remove('stop');
+    }
+
+    function updateView() {
+      if (animationInterval) { clearInterval(animationInterval); }
+      stopAudio();
+
+      const catInfo = determineCategory(currentSensor);
+      const titleEl = document.getElementById("main-title");
+      const badgeEl = document.getElementById("main-badge");
+      const subEl = document.getElementById("main-subtitle");
+      const noticeBanner = document.getElementById("notice-limitation");
+      const noticeMsg = document.getElementById("notice-msg");
+      
+      const pParts = currentSensor.split(catInfo.sub+"_");
+      const shortName = pParts.length > 1 ? pParts[1].replace(/_/g, " ").toUpperCase() : currentSensor;
+      
+      titleEl.childNodes[0].nodeValue = shortName + " ";
+      
+      if (SCHEMA_MAP[catInfo.cat]) {
+        badgeEl.style.display = 'inline-block';
+        badgeEl.className = `badge ${catInfo.cat}`;
+        badgeEl.innerText = SCHEMA_MAP[catInfo.cat].name;
+        subEl.innerText = `${SCHEMA_MAP[catInfo.cat].sub[catInfo.sub] ? SCHEMA_MAP[catInfo.cat].sub[catInfo.sub].desc : ''} | File Prefix: ${currentSensor}`;
+      } else {
+        badgeEl.style.display = 'none';
+        subEl.innerText = currentSensor;
+      }
+
+      // Contextual Notices
+      let showNotice = false;
+      if (currentSensor === 'extero_audio_mic') {
+        showNotice = true;
+        noticeMsg.innerHTML = "<strong>Audio Privacy Notice:</strong> Raw audio (voice/songs) is NOT saved intentionally to preserve privacy and storage (as per PRD). We only log the dBFS Amplitude.";
+      } else if (currentSensor === 'extero_vision_meta') {
+        showNotice = true;
+        noticeMsg.innerHTML = "<strong>RGB Camera Note:</strong> Raw 60fps RGB frames are NOT saved to CSV due to immense I/O overlap. Only Exif/Meta attributes (ISO, Exp, Lens) are logged.";
+      } else if (currentSensor === 'extero_gps_heading') {
+        showNotice = true;
+        noticeMsg.innerHTML = "<strong>Polar Analysis:</strong> Compass tracking maps the rotational degrees array over time.";
+      }
+      else if (catInfo.cat === 'extero') { 
+        showNotice = true;
+        noticeMsg.innerHTML = "<strong>API Limitation Notice:</strong> Frequency Modulation limit applies heavily to Exteroception. Fixed polling rates override Target Hz.";
+      }
+      
+      if (showNotice) { noticeBanner.classList.add('active'); } 
+      else { noticeBanner.classList.remove('active'); }
+
+      const dataAll = (ANALYSIS_DATA["logging_all_data"] || {})[currentSensor];
+      const dataVar = (ANALYSIS_DATA["testing_varying_frequency"] || {})[currentSensor];
+      
+      let visType = "1D_Subplots";
+      if (dataVar && dataVar.vis_type) visType = dataVar.vis_type;
+      else if (dataAll && dataAll.vis_type) visType = dataAll.vis_type;
+      
+      document.getElementById('vizTypeBadge').innerText = visType.replace("1D_Subplots", "Multi-Axis").replace(/([A-Z])/g, ' $1').trim();
+      
+      let descMap = {
+        'Audio': "Hear the synthetic interpretation of dBFS levels. Click Play to start the oscillator volume mapping.",
+        'CompassAnimated': "Animated Polar tracking of Compass Heading (True North vs Magnetic North) tracing device orientation.",
+        'Mapbox': "2D Location mapping on Cartesian space based on GPS Lat/Lon coordinates.",
+        'FaceRadar': "Live 360-degree Radar / Radar chart animating all 52 high-dimensional facial blendshapes.",
+        'LidarSLAM': "3D SLAM-like point cloud simulation. LiDAR Anchors remain in buffer and fade out globally to form a structure.",
+        'Mesh3D_Accel': "3D Vector Shift. An object aggressively displaced by Accel (X,Y,Z) multiplied to be visibly huge.",
+        'Mesh3D_Gyro': "3D Spatial Rotation. Box orientation (Pitch, Roll, Yaw) mutates via Gyroscope integration.",
+        'ActivityCategorical': "Timeline of Activity States (Stationary vs Walking) and Confidence ratings (Not spatial data).",
+        '1D_Subplots': "Variables are drawn in separate sub-plots (axes) bounded by their individual strict ranges."
+      };
+
+      document.getElementById('vizDesc').innerText = descMap[visType] || descMap['1D_Subplots'];
+
+      updateTableView(dataAll, dataVar);
+      updateCharts(dataAll, dataVar);
+      updatePlotlyViz(visType, dataAll, dataVar);
+    }
+    
+    function updateTableView(dataAll, dataVar) {
+      const renderTable = (data, tbodyId, countId) => {
+        const tbody = document.getElementById(tbodyId);
+        const countSpan = document.getElementById(countId);
+        tbody.innerHTML = "";
+        
+        if (!data || !data.sample || Object.keys(data.sample).length === 0) {
+          countSpan.innerText = "No Data";
+          tbody.innerHTML = "<tr><td colspan='2' style='color:#64748B;'>Data missing or not collected.</td></tr>";
+          return;
+        }
+        countSpan.innerText = data.rowCount.toLocaleString() + " rows";
+        Object.keys(data.sample).forEach(c => {
+          const tr = document.createElement("tr");
+          let val = data.sample[c];
+          if (typeof val === 'string' && val.length > 70) val = val.substring(0, 70) + "...";
+          tr.innerHTML = `<td>${c}</td><td>${val ?? '-'}</td>`;
+          tbody.appendChild(tr);
+        });
+      };
+      renderTable(dataAll, "tbody-all", "stat-count-all");
+      renderTable(dataVar, "tbody-varying", "stat-count-varying");
+    }
+
+    function updateCharts(dataAll, dataVar) {
+      // FREQUENCY & DELAY Charts (using Chart.js because it's simpler for these specific UI uses)
+      const tsAll = (dataAll && dataAll.timeseries) ? dataAll.timeseries : [];
+      const tsVar = (dataVar && dataVar.timeseries) ? dataVar.timeseries : [];
+      
+      const cAll = "#10B981", cAllT = "rgba(16, 185, 129, 0.3)", cVar = "#8B5CF6", cVarT = "rgba(139, 92, 246, 0.3)";
+      
+      const ctxF = document.getElementById('frequencyChart').getContext('2d');
+      if (freqChartInst) freqChartInst.destroy();
+      const datasetsF = [];
+      if (tsAll.length > 0) { datasetsF.push({ label: 'Global: Actual Hz', data: tsAll.map(p=>({x:p.t, y:p.actual_hz})), borderColor: cAll, borderWidth: 2, tension: 0.1 }); datasetsF.push({ label: 'Global: Target Hz', data: tsAll.map(p=>({x:p.t, y:p.target_hz})), borderColor: cAllT, borderWidth: 1, borderDash: [4,4]}); }
+      if (tsVar.length > 0) { datasetsF.push({ label: 'Varying: Actual Hz', data: tsVar.map(p=>({x:p.t, y:p.actual_hz})), borderColor: cVar, borderWidth: 2, tension: 0.1 }); datasetsF.push({ label: 'Varying: Target Hz', data: tsVar.map(p=>({x:p.t, y:p.target_hz})), borderColor: cVarT, borderWidth: 1, borderDash: [4,4]}); }
+      freqChartInst = new Chart(ctxF, { type: 'line', data: { datasets: datasetsF }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { type: 'linear', title: {display:true, text:'Relative Time (s)', color:'#94A3B8'}, grid: {color: 'rgba(255,255,255,0.05)'}}, y: { title: {display:true, text:'Frequency (Hz)', color:'#94A3B8'}, grid: {color: 'rgba(255,255,255,0.05)'}} } } });
+
+      const ctxD = document.getElementById('delayChart').getContext('2d');
+      if (delayChartInst) delayChartInst.destroy();
+      const datasetsD = [];
+      if (tsAll.length > 0) datasetsD.push({ label: 'Global Jitter (ms)', data: tsAll.map(p=>({x:p.t, y:p.delay_ms})), borderColor: cAll, backgroundColor: 'rgba(16, 185, 129, 0.15)', borderWidth: 2, fill: true, tension: 0.1 });
+      if (tsVar.length > 0) datasetsD.push({ label: 'Varying Jitter (ms)', data: tsVar.map(p=>({x:p.t, y:p.delay_ms})), borderColor: cVar, backgroundColor: 'rgba(139, 92, 246, 0.15)', borderWidth: 2, fill: true, tension: 0.1 });
+      delayChartInst = new Chart(ctxD, { type: 'line', data: { datasets: datasetsD }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { type: 'linear', title: {display:true, text:'Relative Time (s)', color:'#94A3B8'}, grid: {color: 'rgba(255,255,255,0.05)'}}, y: { title: {display:true, text:'Drift from HW Time (ms)', color:'#94A3B8'}, grid: {color: 'rgba(255,255,255,0.05)'}} } } });
+    }
+
+    // 3D Math Helper
+    function getCubeEdges() {
+      const pts = [ [-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1], [-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1] ];
+      const edges = [ [0,1], [1,2], [2,3], [3,0], [4,5], [5,6], [6,7], [7,4], [0,4], [1,5], [2,6], [3,7] ];
+      let rx=[], ry=[], rz=[];
+      edges.forEach(e => { rx.push(pts[e[0]][0], pts[e[1]][0], null); ry.push(pts[e[0]][1], pts[e[1]][1], null); rz.push(pts[e[0]][2], pts[e[1]][2], null); });
+      return {x: rx, y: ry, z: rz, mode: 'lines', type: 'scatter3d', line: {color: '#8B5CF6', width: 6}};
+    }
+    function rotate3D(v, p, r, y) {
+      let cp=Math.cos(p), sp=Math.sin(p), cr=Math.cos(r), sr=Math.sin(r), cy=Math.cos(y), sy=Math.sin(y);
+      let R = [ [ cy*cp, cy*sp*sr - sy*cr, cy*sp*cr + sy*sr ], [ sy*cp, sy*sp*sr + cy*cr, sy*sp*cr - cy*sr ], [ -sp, cp*sr, cp*cr ] ];
+      let outX=[], outY=[], outZ=[];
+      for(let i=0; i<v.x.length; i++){
+        if(v.x[i]===null) { outX.push(null); outY.push(null); outZ.push(null); continue; }
+        outX.push( R[0][0]*v.x[i] + R[0][1]*v.y[i] + R[0][2]*v.z[i] );
+        outY.push( R[1][0]*v.x[i] + R[1][1]*v.y[i] + R[1][2]*v.z[i] );
+        outZ.push( R[2][0]*v.x[i] + R[2][1]*v.y[i] + R[2][2]*v.z[i] );
+      }
+      return {x: outX, y: outY, z: outZ};
+    }
+    
+    function updatePlotlyViz(visType, dataAll, dataVar) {
+      const container = document.getElementById('plotlyChart');
+      document.getElementById('plotlyChartContainer').style.height = '500px';
+      const btn = document.getElementById('btnReplay');
+      btn.style.display = 'none';
+      btn.classList.remove('stop');
+      Plotly.purge(container); 
+
+      let sourceData = (dataVar && dataVar.vis_data && dataVar.vis_data.length > 0) ? dataVar.vis_data : ((dataAll && dataAll.vis_data) ? dataAll.vis_data : []);
+      if (!sourceData || sourceData.length === 0) return;
+      let stats = (dataVar && dataVar.stats && Object.keys(dataVar.stats).length>0) ? dataVar.stats : (dataAll ? dataAll.stats : {});
+
+      const layoutBase = { paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', font: {color: '#94A3B8'}, margin: {l: 50, r: 20, t: 40, b: 40} };
+
+      if (visType === 'Audio') {
+        btn.style.display = 'inline-block';
+        btn.innerText = "Play Synthesizer";
+        
+        // Render graph immediately so it doesn't wait for play
+        let dbfsVals = sourceData.map(d => d.f.dbfs || -100);
+        Plotly.newPlot(container, [ {x: sourceData.map(d=>d.t), y: dbfsVals, type: 'scatter', mode: 'lines', fill: 'tozeroy', line: {color: '#10B981'}} ], { ...layoutBase, title: 'Audio Microphone (dBFS)', yaxis: {range: [-120, 0]} });
+
+        btn.onclick = () => {
+          if (oscillator) { stopAudio(); return; }
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return alert("WebAudio not supported");
+          audioCtx = new AudioContext();
+          oscillator = audioCtx.createOscillator();
+          gainNode = audioCtx.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = 440; 
+          oscillator.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          gainNode.gain.value = 0;
+          oscillator.start();
+          
+          btn.innerText = "Stop Synthesizer";
+          btn.classList.add('stop');
+
+          let iter = 0;
+          animationInterval = setInterval(() => {
+            if (iter >= sourceData.length) iter = 0;
+            let rawDb = sourceData[iter].f.dbfs || -100;
+            let linearVolume = Math.pow(10, rawDb / 20) * 0.5; // Scale max volume
+            gainNode.gain.linearRampToValueAtTime(linearVolume, audioCtx.currentTime + 0.1);
+            
+            // Draw a moving vertical line for playback cursor
+            Plotly.relayout(container, { shapes: [{ type: 'line', x0: sourceData[iter].t, x1: sourceData[iter].t, y0:-120, y1:0, line:{color:'#F43F5E', width:2} }]});
+            
+            iter++;
+          }, 100);
+        };
+      } 
+      else if (visType === 'CompassAnimated') {
+        btn.style.display = 'inline-block';
+        btn.innerText = "Animate Compass";
+        
+        let thetas_true = sourceData.map(d => d.f.true || 0);
+        let layout = { ...layoutBase, title:'Compass Point Animated', polar: { radialaxis: {visible: false, range: [0, 1]}, angularaxis: {direction: 'clockwise', rotation: 90} } };
+        Plotly.newPlot(container, [{ type: 'scatterpolar', mode: 'lines+markers', r: [0, 1], theta: [0, thetas_true[0]], line: {color: '#FBBF24', width: 4}, marker: {size:10} }], layout);
+
+        let iter = 0;
+        btn.onclick = () => {
+          if(animationInterval) { clearInterval(animationInterval); animationInterval=null; btn.innerText="Animate Compass"; btn.classList.remove('stop'); return; }
+          btn.innerText = "Stop"; btn.classList.add('stop');
+          animationInterval = setInterval(() => {
+            if(iter>=sourceData.length) iter=0;
+            Plotly.animate(container, { data:[{theta: [0, thetas_true[iter]]}] }, {transition:{duration:0}, frame:{duration:40}});
+            iter++;
+          }, 40);
+        };
+      }
+      else if (visType === 'Mapbox') {
+        let lats = sourceData.map(d => d.f.lat).filter(l=>l>0);
+        let lons = sourceData.map(d => d.f.lon).filter(l=>l>0);
+        if (lats.length>0 && lons.length>0) {
+            Plotly.newPlot(container, [{ type: 'scattermapbox', lat: lats, lon: lons, mode: 'lines+markers', marker: {size:8, color: '#38BDF8'} }], { margin: {l:0, r:0, t:0, b:0}, mapbox: { style: 'open-street-map', center: {lat: lats[0], lon: lons[0]}, zoom: 16 } });
+        }
+      }
+      else if (visType === 'FaceRadar') {
+        btn.style.display = 'inline-block';
+        btn.innerText = "Play High-Dim Face Pulse";
+        
+        let sampleObj = sourceData[0].f.blendshapes || sourceData[0].f;
+        let keys = Object.keys(sampleObj);
+        
+        let layout = { ...layoutBase, title: '52-Dim Face BlendShapes Radar', polar: { radialaxis: {visible: true, range: [0, 1], color:'#1E293B'}, angularaxis: {tickfont:{size:8}, color:'#94A3B8'} } };
+        Plotly.newPlot(container, [{ type: 'scatterpolar', mode: 'lines+markers', r: keys.map(k=>parseFloat(sampleObj[k])||0), theta: keys, fill: 'toself', marker:{color:'#8B5CF6'} }], layout);
+        
+        let iter = 0;
+        btn.onclick = () => {
+          if(animationInterval) { clearInterval(animationInterval); animationInterval=null; btn.innerText="Play High-Dim Face Pulse"; btn.classList.remove('stop'); return; }
+          btn.innerText = "Stop"; btn.classList.add('stop');
+          animationInterval = setInterval(() => {
+            if (iter >= sourceData.length) iter = 0;
+            let bs = sourceData[iter].f.blendshapes || sourceData[iter].f;
+            let vals = keys.map(k=>parseFloat(bs[k])||0);
+            Plotly.animate(container, { data:[{r: vals}] }, {transition:{duration:0}, frame:{duration:50}});
+            iter++;
+          }, 50);
+        };
+      }
+      else if (visType === 'LidarSLAM') {
+        btn.style.display = 'inline-block';
+        btn.innerText = "Play Lidar SLAM Stream";
+        
+        // SLAM approach: Buffer historical points so they form a structure
+        let trace = { x:[], y:[], z:[], mode:'markers', marker:{color:'#10B981', size:3, opacity:0.8}, type:'scatter3d' };
+        Plotly.newPlot(container, [trace], { ...layoutBase, scene: { xaxis:{range:[-20,20], title:''}, yaxis:{range:[-20,20], title:''}, zaxis:{range:[-20,20], title:''} } });
+        
+        let iter = 0;
+        let pBufX=[], pBufY=[], pBufZ=[], opBuf=[];
+        btn.onclick = () => {
+          if(animationInterval) { clearInterval(animationInterval); animationInterval=null; btn.innerText="Play Lidar SLAM Stream"; btn.classList.remove('stop'); return; }
+          btn.innerText = "Stop"; btn.classList.add('stop');
+          animationInterval = setInterval(() => {
+            if(iter >= sourceData.length) iter = 0;
+            let counts = sourceData[iter].f.anchor_count || 1;
+            // Generate pseudo anchors in front of sensor
+            for(let i=0; i<counts; i++){ 
+              pBufX.push((Math.random()-0.5)*15); pBufY.push((Math.random()-0.5)*15); pBufZ.push((Math.random()-0.5)*15);
+              opBuf.push(1.0); // full opacity
+            }
+            
+            // Fade out old points
+            for(let i=0; i<opBuf.length; i++) { opBuf[i] -= 0.05; }
+            
+            // Remove dead points
+            while(opBuf.length > 0 && opBuf[0] <= 0) { opBuf.shift(); pBufX.shift(); pBufY.shift(); pBufZ.shift(); }
+            
+            Plotly.animate(container, { data:[{ x:pBufX, y:pBufY, z:pBufZ }] }, {transition:{duration:0}, frame:{duration:50}});
+            iter++;
+          }, 50);
+        };
+      }
+      else if (visType === 'Mesh3D_Accel') {
+        btn.style.display = 'inline-block';
+        btn.innerText = "Play Accel Impact";
+        let baseCube = getCubeEdges();
+        
+        // Force massive scale differences to make translation visibly obvious
+        const sx = stats.x ? Math.max(Math.abs(stats.x.min), Math.abs(stats.x.max)) * 2 : 2;
+        const sy = stats.y ? Math.max(Math.abs(stats.y.min), Math.abs(stats.y.max)) * 2 : 2;
+        const sz = stats.z ? Math.max(Math.abs(stats.z.min), Math.abs(stats.z.max)) * 2 : 2;
+        let layout = { ...layoutBase, title:'Accelerometer Displacement', scene: { xaxis:{range:[-sx,sx]}, yaxis:{range:[-sy,sy]}, zaxis:{range:[-sz,sz]} } };
+        Plotly.newPlot(container, [baseCube], layout);
+
+        let iter = 0;
+        btn.onclick = () => {
+          if(animationInterval) { clearInterval(animationInterval); animationInterval=null; btn.innerText="Play Accel Impact"; btn.classList.remove('stop'); return; }
+          btn.innerText = "Stop"; btn.classList.add('stop');
+          animationInterval = setInterval(() => {
+            if (iter >= sourceData.length) iter = 0;
+            let ax = sourceData[iter].f.x || 0, ay = sourceData[iter].f.y || 0, az = sourceData[iter].f.z || 0;
+            let shifted = { x: baseCube.x.map(v => v!==null ? v+ax : null), y: baseCube.y.map(v => v!==null ? v+ay : null), z: baseCube.z.map(v => v!==null ? v+az : null) };
+            Plotly.animate(container, { data:[shifted] }, {transition:{duration:0}, frame:{duration:30}});
+            iter++;
+          }, 30);
+        };
+      }
+      else if (visType === 'Mesh3D_Gyro') {
+        btn.style.display = 'inline-block';
+        btn.innerText = "Play Gyro Spin";
+        let baseCube = getCubeEdges();
+        let layout = { ...layoutBase, title:'Gyroscope Orientation', scene: { xaxis:{range:[-2,2]}, yaxis:{range:[-2,2]}, zaxis:{range:[-2,2]} } };
+        Plotly.newPlot(container, [baseCube], layout);
+
+        let iter = 0;
+        btn.onclick = () => {
+          if(animationInterval) { clearInterval(animationInterval); animationInterval=null; btn.innerText="Play Gyro Spin"; btn.classList.remove('stop'); return; }
+          btn.innerText = "Stop"; btn.classList.add('stop');
+          animationInterval = setInterval(() => {
+            if (iter >= sourceData.length) iter = 0;
+            // Accumulate or just show instantaneous pitch/roll/yaw (since the raw data is rad/s, we just map it as absolute rotation for viz purposes)
+            let pp = sourceData[iter].f.pitch || 0, rr = sourceData[iter].f.roll || 0, yy = sourceData[iter].f.yaw || 0;
+            let rot = rotate3D(baseCube, pp, rr, yy);
+            Plotly.animate(container, { data:[rot] }, {transition:{duration:0}, frame:{duration:30}});
+            iter++;
+          }, 30);
+        };
+      }
+      else if (visType === 'ActivityCategorical') {
+        // Timeline 2D step plot for categorical data
+        let times = sourceData.map(d => d.t);
+        let types = sourceData.map(d => String(d.f.type));
+        let confs = sourceData.map(d => d.f.confidence || 0);
+
+        Plotly.newPlot(container, [
+          { x: times, y: types, mode: 'lines+markers', line:{shape:'hv', color:'#38BDF8'}, name:'Activity Type' }
+        ], { ...layoutBase, title: 'Activity Context Timeline (Categorical)', margin:{l:100, r:20, t:40, b:40} });
+      }
+      else {
+        // visType === '1D_Subplots'
+        let keys = Object.keys(sourceData[0].f).filter(k => typeof sourceData[0].f[k] === 'number');
+        if (keys.length === 0) return;
+        
+        let traces = [];
+        let yaxes = {};
+        
+        document.getElementById('plotlyChartContainer').style.height = `${Math.max(400, keys.length * 200)}px`;
+        
+        // Multi-axis Plotly Setup
+        let domainStep = 1.0 / keys.length;
+        keys.forEach((k, idx) => {
+          traces.push({
+             x: sourceData.map(d => d.t), y: sourceData.map(d => d.f[k]),
+             name: k, type: 'scatter', mode: 'lines', yaxis: `y${idx===0 ? '' : idx+1}`
+          });
+          
+          let ymin = stats[k] ? stats[k].min : 0;
+          let ymax = stats[k] ? stats[k].max : 1;
+          
+          // Make range slightly padded
+          let pad = (ymax - ymin) * 0.1 || 1.0;
+          
+          let axName = `yaxis${idx===0 ? '' : idx+1}`;
+          yaxes[axName] = {
+             title: k, 
+             range: [ymin - pad, ymax + pad],
+             domain: [1.0 - (idx+1)*domainStep + 0.02, 1.0 - idx*domainStep - 0.02],
+             gridcolor: '#1E293B',
+             tickfont: {size: 10}
+          };
+        });
+        
+        let layout = { ...layoutBase, title: 'Multi-Axis Dimensional Breakdown', xaxis: {title: 'Time (s)', gridcolor: '#1E293B'}, ...yaxes };
+        Plotly.newPlot(container, traces, layout);
+      }
+    }
+
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + tab.dataset.target).classList.add('active');
+      });
+    });
+
+    window.addEventListener('load', buildSidebar);
+  </script>
+</body>
+</html>
