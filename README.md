@@ -62,6 +62,58 @@ The app is decoupled into four primary layers to guarantee UI thread stability w
 3. **System Introspection Layer**: Monitors device health (`SystemMetricsMonitor`) to trigger feedback loops.
 4. **Storage & Persistence Layer**: A non-blocking `BufferQueue` mapped into a `DataFileWriter` (Multi-CSV format).
 
+```mermaid
+flowchart TB
+    %% Layer Styling
+    classDef ui fill:#1E1E1E,stroke:#4CAF50,stroke-width:2px,color:#fff
+    classDef core fill:#2C3E50,stroke:#3498DB,stroke-width:2px,color:#fff
+    classDef sensor fill:#5D6D7E,stroke:#F1C40F,stroke-width:2px,color:#fff
+    classDef buffer fill:#D35400,stroke:#E67E22,stroke-width:2px,color:#fff
+    classDef storage fill:#27AE60,stroke:#2ECC71,stroke-width:2px,color:#fff
+    classDef system fill:#8E44AD,stroke:#9B59B6,stroke-width:2px,color:#fff
+
+    subgraph Layer1 [1. Core Application Layer & View]
+        direction TB
+        UI[DashboardView]:::ui
+        PermManager[PermissionManager]:::core
+        LogCtrl["LogController (Orchestrator)"]:::core
+
+        UI -- "Action" --> LogCtrl
+        UI -- "Check Auth" --> PermManager
+        PermManager -- "Granted" --> LogCtrl
+    end
+
+    subgraph Layer3 [3. System Introspection Layer]
+        SysMonitor[SystemMetricsMonitor]:::system
+        SysMonitor -- "Thermal/Memory Alerts" --> LogCtrl
+    end
+
+    subgraph Layer2 [2. Sensor Management Layer]
+        direction LR
+        Motion["MotionLogger\n(800Hz)"]:::sensor
+        Location["LocationLogger\n(1-10Hz)"]:::sensor
+        Vision["VisionLogger\n(30-120Hz)"]:::sensor
+
+        LogCtrl -- "Throttle Cmds" --> Motion
+        LogCtrl -- "Throttle Cmds" --> Location
+        LogCtrl -- "Throttle Cmds" --> Vision
+    end
+
+    subgraph Layer4 [4. Storage & Persistence Layer]
+        direction TB
+        Buffer["BufferQueue\n(Producer-Consumer)"]:::buffer
+        Writer["DataFileWriter\n(Multi-CSV)"]:::storage
+
+        Buffer == "Batch Async Write" ==> Writer
+    end
+
+    %% High-bandwidth streams bypassing UI directly to Buffer
+    Motion == "Dictionaries" ==> Buffer
+    Location == "Vectors" ==> Buffer
+    Vision == "Float arrays" ==> Buffer
+    SysMonitor -. "Metrics" .-> Buffer
+```
+
 ## 🛠 Prerequisites & Getting Started
 
 > **CRITICAL**: You _must_ run this on a physical **iPhone 16 Pro / Pro Max** (A17/A18 Pro chips). The Simulator cannot emulate the true thermal, hardware limits, or scheduling jitters that this project aims to capture. iOS 17.0+ is required.
