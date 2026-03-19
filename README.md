@@ -1,24 +1,30 @@
-# iphoneLogger
+<p align="center">
+  <img src="assets/banner.svg" alt="NeoSense Banner" width="100%"/>
+</p>
 
-[![Swift](https://img.shields.io/badge/Swift-5.10+-orange.svg)](https://swift.org)
-[![iOS](https://img.shields.io/badge/iOS-17.0+-blue.svg)](https://developer.apple.com/ios/)
-[![Device](https://img.shields.io/badge/Device-iPhone_16_Pro-black.svg)]()
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)]()
+<p align="center">
+  <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-5.10+-orange.svg" alt="Swift"></a>
+  <a href="https://developer.apple.com/ios/"><img src="https://img.shields.io/badge/iOS-17.0+-blue.svg" alt="iOS"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
+  <a href=""><img src="https://img.shields.io/badge/Status-Active-brightgreen.svg" alt="Status"></a>
+</p>
 
-Multi-modal sensor logging testbed for iPhone 16 Pro — capturing raw, high-frequency sensory data for edge AI agent research.
+<p align="center">
+  <strong>Multi-modal sensor logging testbed for iPhone 16 Pro</strong><br>
+  Capturing raw, high-frequency sensory data for edge AI agent research.
+</p>
 
 ---
 
 ## Table of Contents
 
-- [Background \& Motivation](#background--motivation)
+- [Background & Motivation](#background--motivation)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
 - [Data Schema](#data-schema)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Related Projects](#related-projects)
+- [NeoMakes Ecosystem](#neomakes-ecosystem)
 - [Current Status](#current-status)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
@@ -28,11 +34,24 @@ Multi-modal sensor logging testbed for iPhone 16 Pro — capturing raw, high-fre
 
 ## Background & Motivation
 
-Modern edge AI agents need rich, real-world sensory data to understand physical context — but most datasets are sanitized, downsampled, or synthetic. **iphoneLogger** captures the raw, noisy reality of hardware-level sensor behavior on the iPhone 16 Pro.
+Modern edge AI agents need rich, real-world sensory data to understand physical context — but most datasets are sanitized, downsampled, or synthetic. **NeoSense** captures the raw, noisy reality of hardware-level sensor behavior on the iPhone 16 Pro.
 
 This project serves as a **Physical DataStream testbed**: by logging exteroceptive (vision, audio, GPS), proprioceptive (IMU, actuators), and interoceptive (thermal, battery, CPU) signals simultaneously, it produces multi-modal datasets that reflect real-world interference patterns — frequency jitter, thermal throttling, OS scheduling delays, and sensor crosstalk.
 
-The resulting data streams are designed as inputs for the [neomakes](https://github.com/neomakes) agent ecosystem, functioning as a hardware-level MCP-like sensor interface for on-device AI agents.
+### The NeoMakes Pipeline
+
+NeoSense is the **sensory foundation** of the NeoMakes intelligence stack:
+
+```
+NeoSense (sensor capture) → PIP / NeoMind (wellness intelligence) → neocog (agent kernel)
+```
+
+- **NeoSense** captures raw somatic data — the physical world as experienced by the device
+- **[PIP](https://github.com/neomakes/PIP_Project)** transforms sensor patterns into personal wellness intelligence
+- **[NeoMind / humanWorldModel](https://github.com/neomakes/humanWorldModel)** models human behavior trajectories from sensor-derived features
+- **[neocog](https://github.com/neomakes/neocog)** consumes these streams as input for on-device agentic inference
+
+The resulting data streams function as a hardware-level MCP-like sensor interface for on-device AI agents.
 
 ---
 
@@ -149,13 +168,13 @@ Every CSV row enforces a strict time-series meta-schema for analyzing delays, ji
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/neomakes/iphonelogger.git
-   cd iphonelogger
+   git clone https://github.com/neomakes/neosense.git
+   cd neosense
    ```
 
-2. Open `iphoneLogger.xcodeproj` in Xcode.
+2. Open `NeoSense.xcodeproj` in Xcode.
 
-3. Select the **iphoneLogger** target and go to **Signing & Capabilities**:
+3. Select the **NeoSense** target and go to **Signing & Capabilities**:
    - Select your **Development Team**
    - Xcode will handle provisioning automatically
 
@@ -180,7 +199,7 @@ Every CSV row enforces a strict time-series meta-schema for analyzing delays, ji
 ### Accessing Logged Data
 
 1. Open **Files** app on iPhone
-2. Navigate to **On My iPhone > iphoneLogger**
+2. Navigate to **On My iPhone > NeoSense**
 3. Find separate `.csv` files per sensor (e.g., `proprio_imu_accel_*.csv`)
 4. Share via AirDrop, iCloud Drive, or USB for analysis
 
@@ -203,29 +222,38 @@ accel['jitter'] = accel['actual_hz'] - accel['target_hz']
 ## Directory Structure
 
 ```
-iphoneLogger/
+neosense/
 ├── README.md
+├── README.ko.md
 ├── LICENSE
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
-├── docs/                  # PRD, UX/UI design, architecture diagrams
-├── analysis/              # Python analysis scripts
-├── iphoneLogger/
-│   ├── App/               # App entry point and lifecycle
-│   ├── Managers/          # Sensor modules (Motion, Location, Vision)
-│   ├── Models/            # Data schemas and definitions
-│   ├── Utils/             # File I/O, formatting, export utilities
-│   └── Views/             # SwiftUI dashboard and UI components
-└── iphoneLogger.xcodeproj
+├── assets/               # Banner and media assets
+├── docs/                 # PRD, UX/UI design, architecture diagrams
+├── analysis/             # Python analysis scripts
+├── NeoSense/
+│   ├── App/              # App entry point and lifecycle
+│   ├── Managers/         # Sensor modules (Motion, Location, Vision)
+│   ├── Models/           # Data schemas and definitions
+│   ├── Utils/            # File I/O, formatting, export utilities
+│   └── Views/            # SwiftUI dashboard and UI components
+└── NeoSense.xcodeproj
 ```
 
 ---
 
-## Related Projects
+## NeoMakes Ecosystem
 
-- **[neocog](https://github.com/neomakes/neocog)** — On-device agentic inference kernel. iphoneLogger's sensor streams are designed as input for neocog's Physical DataStream interface.
-- **[PIP_Project](https://github.com/neomakes/PIP_Project)** — Personal Intelligence Platform. Uses processed sensor data for wellness intelligence features.
-- **[humanWorldModel](https://github.com/neomakes/humanWorldModel)** — VRAE-based human behavior trajectory modeling, consuming data patterns from sensor logs.
+NeoSense is part of the **NeoMakes** open-source research portfolio — building foundational technology for human-AI interaction in extreme environments.
+
+| Project | Role | Link |
+|:--|:--|:--|
+| **NeoSense** | Somatic sensor capture | *you are here* |
+| **PIP** | Personal Intelligence Platform | [neomakes/PIP_Project](https://github.com/neomakes/PIP_Project) |
+| **humanWorldModel** | VRAE behavior trajectory modeling | [neomakes/humanWorldModel](https://github.com/neomakes/humanWorldModel) |
+| **neocog** | On-device agentic inference kernel | [neomakes/neocog](https://github.com/neomakes/neocog) |
+| **NeoLAT** | Agent persona evaluation testbed | [neomakes/neolat](https://github.com/neomakes/neolat) |
+| **EigenLLM** | LLM decomposition research | [neomakes/eigenllm](https://github.com/neomakes/eigenllm) |
 
 ---
 

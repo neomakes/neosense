@@ -16,7 +16,7 @@ class DataFileWriter {
         // Ensure directory exists
         try? FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
         
-        self.queue = DispatchQueue(label: "com.iphoneLogger.writer.\(sensorName)", qos: .background)
+        self.queue = DispatchQueue(label: "com.neomakes.neosense.writer.\(sensorName)", qos: .background)
         setupFile(header: header)
     }
     

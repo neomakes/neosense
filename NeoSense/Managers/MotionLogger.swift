@@ -21,7 +21,7 @@ class MotionLogger: ObservableObject {
     // Dedicated background queue for high-bandwidth IMU streams
     private let imuQueue: OperationQueue = {
         let queue = OperationQueue()
-        queue.name = "com.neomakes.iphonelogger.imu"
+        queue.name = "com.neomakes.neosense.imu"
         queue.qualityOfService = .userInteractive
         return queue
     }()

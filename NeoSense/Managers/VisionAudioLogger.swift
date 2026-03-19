@@ -64,7 +64,7 @@ class VisionAudioLogger: NSObject, ObservableObject, ARSessionDelegate, AVCaptur
             captureSession.addInput(audioInput)
             
             let audioOutput = AVCaptureAudioDataOutput()
-            audioOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "com.iphonelogger.audio.queue"))
+            audioOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "com.neomakes.neosense.audio.queue"))
             if captureSession.canAddOutput(audioOutput) {
                 captureSession.addOutput(audioOutput)
             }
@@ -77,7 +77,7 @@ class VisionAudioLogger: NSObject, ObservableObject, ARSessionDelegate, AVCaptur
             captureSession.addInput(videoInput)
             
             let videoOutput = AVCaptureVideoDataOutput()
-            videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "com.iphonelogger.video.metadata.queue"))
+            videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "com.neomakes.neosense.video.metadata.queue"))
             if captureSession.canAddOutput(videoOutput) {
                 captureSession.addOutput(videoOutput)
             }

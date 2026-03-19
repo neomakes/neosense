@@ -15,7 +15,7 @@ class AudioMetaManager: NSObject, ObservableObject, AVCaptureAudioDataOutputSamp
     @Published var micLevel: Float = -100.0
     var logController: LogController?
 
-    private let sessionQueue = DispatchQueue(label: "com.neomakes.iphonelogger.sessionQueue", qos: .userInitiated)
+    private let sessionQueue = DispatchQueue(label: "com.neomakes.neosense.sessionQueue", qos: .userInitiated)
     
     func updateState() {
         // Safe check on main thread, then move all intensive session work to a serial background queue

@@ -2,7 +2,7 @@ import SwiftUI
 import AVFoundation
 
 @main
-struct iphoneLoggerApp: App {
+struct NeoSenseApp: App {
     // 앱의 전역 생명주기와 상태를 관리하는 컨트롤러를 최상위 환경 객체로 주입합니다.
     @StateObject private var logController = LogController()
     

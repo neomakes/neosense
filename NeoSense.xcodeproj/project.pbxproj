@@ -7,26 +7,26 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		B5F969FA2F5C44E80058538A /* iphoneLogger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iphoneLogger.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5F969FA2F5C44E80058538A /* NeoSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NeoSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B5E331702F5C4C6A000402F1 /* Exceptions for "iphoneLogger" folder in "iphoneLogger" target */ = {
+		B5E331702F5C4C6A000402F1 /* Exceptions for "NeoSense" folder in "NeoSense" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = B5F969F92F5C44E80058538A /* iphoneLogger */;
+			target = B5F969F92F5C44E80058538A /* NeoSense */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B5F969FC2F5C44E80058538A /* iphoneLogger */ = {
+		B5F969FC2F5C44E80058538A /* NeoSense */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				B5E331702F5C4C6A000402F1 /* Exceptions for "iphoneLogger" folder in "iphoneLogger" target */,
+				B5E331702F5C4C6A000402F1 /* Exceptions for "NeoSense" folder in "NeoSense" target */,
 			);
-			path = iphoneLogger;
+			path = NeoSense;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,7 +45,7 @@
 		B5F969F12F5C44E80058538A = {
 			isa = PBXGroup;
 			children = (
-				B5F969FC2F5C44E80058538A /* iphoneLogger */,
+				B5F969FC2F5C44E80058538A /* NeoSense */,
 				B5F969FB2F5C44E80058538A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		B5F969FB2F5C44E80058538A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B5F969FA2F5C44E80058538A /* iphoneLogger.app */,
+				B5F969FA2F5C44E80058538A /* NeoSense.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B5F969F92F5C44E80058538A /* iphoneLogger */ = {
+		B5F969F92F5C44E80058538A /* NeoSense */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B5F96A052F5C44E90058538A /* Build configuration list for PBXNativeTarget "iphoneLogger" */;
+			buildConfigurationList = B5F96A052F5C44E90058538A /* Build configuration list for PBXNativeTarget "NeoSense" */;
 			buildPhases = (
 				B5F969F62F5C44E80058538A /* Sources */,
 				B5F969F72F5C44E80058538A /* Frameworks */,
@@ -74,13 +74,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				B5F969FC2F5C44E80058538A /* iphoneLogger */,
+				B5F969FC2F5C44E80058538A /* NeoSense */,
 			);
-			name = iphoneLogger;
+			name = NeoSense;
 			packageProductDependencies = (
 			);
-			productName = iphoneLogger;
-			productReference = B5F969FA2F5C44E80058538A /* iphoneLogger.app */;
+			productName = NeoSense;
+			productReference = B5F969FA2F5C44E80058538A /* NeoSense.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -98,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B5F969F52F5C44E80058538A /* Build configuration list for PBXProject "iphoneLogger" */;
+			buildConfigurationList = B5F969F52F5C44E80058538A /* Build configuration list for PBXProject "NeoSense" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B5F969F92F5C44E80058538A /* iphoneLogger */,
+				B5F969F92F5C44E80058538A /* NeoSense */,
 			);
 		};
 /* End PBXProject section */
@@ -265,7 +265,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = iphoneLogger/Info.plist;
+				INFOPLIST_FILE = NeoSense/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -281,7 +281,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.neomakes.iphoneLogger;
+				PRODUCT_BUNDLE_IDENTIFIER = com.neomakes.NeoSense;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
@@ -311,7 +311,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = iphoneLogger/Info.plist;
+				INFOPLIST_FILE = NeoSense/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -327,7 +327,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.neomakes.iphoneLogger;
+				PRODUCT_BUNDLE_IDENTIFIER = com.neomakes.NeoSense;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
@@ -347,7 +347,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B5F969F52F5C44E80058538A /* Build configuration list for PBXProject "iphoneLogger" */ = {
+		B5F969F52F5C44E80058538A /* Build configuration list for PBXProject "NeoSense" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B5F96A032F5C44E90058538A /* Debug */,
@@ -356,7 +356,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B5F96A052F5C44E90058538A /* Build configuration list for PBXNativeTarget "iphoneLogger" */ = {
+		B5F96A052F5C44E90058538A /* Build configuration list for PBXNativeTarget "NeoSense" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B5F96A062F5C44E90058538A /* Debug */,
